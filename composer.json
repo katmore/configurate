@@ -1,0 +1,31 @@
+{
+	"name": "katmore/configurate",
+	"description": "Configuration library and utilities",
+	"homepage": "https://github.com/katmore/configurate",
+	"license": [
+		"MIT",
+		"GPL-3.0+"
+	],
+	"require": {
+		"php": ">=7.3.1"
+	},
+	"autoload": {
+		"psr-4": {
+			"Katmore\\Configurate\\": "src"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Katmore\\Configurate\\TestCase\\": "tests/phpunit/TestCase",
+			"Katmore\\Configurate\\Tests\\": "tests/phpunit/Tests"
+		}
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^7",
+		"phpunit/php-code-coverage": "^6.0",
+		"php-di/phpdoc-reader": "^2.1"
+	},
+	"bin" : [
+		"bin/config"
+	]
+}

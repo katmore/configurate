@@ -1,0 +1,88 @@
+#!/usr/bin/env php
+<?php
+/**
+ * Command-line configuration utility
+ *
+ * Usage:
+ *    config NAMESPACE VALUE
+ *    config - NAMESPACE {<STDIN(VALUE)}
+ *    config NAMESPACE
+ *    config
+ */
+if ('cli' !== PHP_SAPI) throw new RuntimeException(basename(__FILE__) . " must be executed from the command-line");
+
+if (empty(
+   $autoload = array_filter([
+      __DIR__ . '/../../autoload.php',
+      __DIR__ . '/../vendor/autoload.php',
+      __DIR__ . '/vendor/autoload.php',
+   ], function (string $path) {
+      return is_file($path);
+   }))) {
+   throw new RuntimeException('missing vendor/autoload.php, have you run composer?');
+}
+
+require array_shift($autoload);
+
+new class($_SERVER['argv']) {
+   public function __construct(array $argv) {
+      $optind = null;
+      $option = getopt('hua', [
+         'help',
+         'usage',
+         'about',
+      ], $optind);
+
+      if (isset($option['u']) || isset($option['usage']) || isset($option['h']) || isset($option['help']) || isset($option['a']) || isset($option['about'])) {
+         $phpDoc = static::source2FirstPhpDoc(file_get_contents(__FILE__));
+         $phpDocLine = explode("\n", $phpDoc);
+         echo $phpDocLine[0];
+         exit(0);
+      }
+
+      $operand = array_slice($argv, $optind);
+   }
+   private function phpDoc2Intro(string $phpDoc): string {
+      $phpDoc = explode("\n", $phpDoc);
+   }
+   private function phpDoc2Section(string $phpDoc, string $sectionHeading): string {
+      $phpDoc = explode("\n", $phpDoc);
+
+      if (false === ($startPos = array_search($sectionHeading, $phpDoc))) {
+         return '';
+      }
+
+      $section = array_slice($phpDoc, $startPos);
+
+      if (false !== ($endPos = array_search('', $section))) {
+         return array_slice($section, 0, $endPos);
+      }
+
+      return implode("\n", $section);
+   }
+   private function source2FirstPhpDoc(string $source): string {
+      $phpDoc = array_filter(token_get_all($source), function ($entry) {
+         return $entry[0] == T_DOC_COMMENT;
+      });
+
+      $phpDoc = !empty($phpDoc) ? explode("\n", array_shift($phpDoc)[1]) : [];
+
+      $phpDoc = array_map(function (string $line) {
+         return rtrim(trim(trim($line), "/*"));
+      }, $phpDoc);
+
+      $phpDoc = array_map(function (string $line) {
+         return substr($line, 0, 1) === ' ' ? substr($line, 1) : $line;
+      }, $phpDoc);
+
+      $phpDoc = array_map(function (string $line) {
+         return empty(trim($line)) ? '' : $line;
+      }, $phpDoc);
+
+      $phpDoc = trim(implode("\n", $phpDoc));
+      
+      $phpDoc = preg_replace( "/[\n]{3,}/", "\n\n", $phpDoc );
+
+      return $phpDoc;
+   }
+};
