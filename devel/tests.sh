@@ -146,21 +146,14 @@ xdebug_sanity_check() {
 	 return $XDEBUG_STATUS
 }
 
-PHPUNIT_COVERAGE_STATUS=-1
 phpunit_coverage_check() {
-   [ "$PHPUNIT_COVERAGE_STATUS" != "-1" ] && return $PHPUNIT_COVERAGE_STATUS
 	 [ "$SKIP_COVERAGE_REPORT" = "0" ] || {
-	   PHPUNIT_COVERAGE_STATUS=1
-	   return $PHPUNIT_COVERAGE_STATUS
+	   return 1
 	 }
-   xdebug_sanity_check && {
-     PHPUNIT_COVERAGE_STATUS=0
-     return $PHPUNIT_COVERAGE_STATUS
-   }
+   xdebug_sanity_check && return
    >&2 echo "$ME_NAME: (NOTICE) xdebug is not available, will skip coverage reports"
    SKIP_COVERAGE_REPORT=1
-   PHPUNIT_COVERAGE_STATUS=1
-   return $PHPUNIT_COVERAGE_STATUS
+   return 1
 }
 phpunit_coverage_check
 
